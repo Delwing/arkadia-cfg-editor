@@ -97,7 +97,7 @@ function ArkadiaEditor:getExtension()
     if os == "windows" then
         return "exe"
     end
-    if os == "macos" then
+    if os == "mac" then
         return "dmg"
     end
     return "AppImage"
