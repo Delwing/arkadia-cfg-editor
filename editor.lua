@@ -1,7 +1,7 @@
 ArkadiaEditor = ArkadiaEditor or {}
 
 local editorBinaryBase = getMudletHomeDir() .. "/plugins/arkadia-cfg-editor/editor."
-local apiUrl = "https://api.github.com/repos/Delwing/arkadia-cfg-editor/releases/latest"
+local apiUrl = "https://api.github.com/repos/Delwing/arkadia-config-editor/releases/latest"
 
 function ArkadiaEditor:getLatestInformation()
     getHTTP(apiUrl)
