@@ -1,9 +1,9 @@
 # Edytor konfiguracji
 
 Plugin do [Arkadia skryptów](https://github.com/tjurczyk/arkadia)
-Minimalna wymagana wersja skryptów to 4.12
+Minimalna wymagana wersja skryptów to 4.13
 
-![Screenshot](https://raw.githubusercontent.com/Delwing/arkadia-cfg-editor/media/editor.jpg)
+![Screenshot](https://github.com/Delwing/arkadia-cfg-editor/blob/media/editor.png)
 
 ## Instalacja
 

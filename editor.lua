@@ -57,7 +57,7 @@ function ArkadiaEditor:run(config)
     local extension = self:getExtension()
     local editorBinary = self:getBinary()
     if extension == "AppImage" then
-        os.execute("chmod +x " .. editorBinary)
+        spawn(display, "chmod", "+x", editorBinary)
     end
     spawn(display, editorBinary, "-arg", getMudletHomeDir(), config)
 end
