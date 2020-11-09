@@ -17,7 +17,9 @@ function ArkadiaEditor:versionCompare(url, response)
         return true
     end
 
-    if response.tag_name ~= self:getBinaryVersion() then
+    local responseObj = yajl.to_value(response)
+
+    if responseObj.tag_name ~= self:getBinaryVersion() then
         scripts:print_log("<SpringGreen>===> Zalecana aktualizacja edytora konfiguracji.", true)
         local command = "ArkadiaEditor:getLatestInformation()"
         cechoLink("<CadetBlue>(skrypty)<SpringGreen>: Kliknij tutaj aby pobrac.", command,"Pobierz", true)
@@ -63,9 +65,11 @@ function ArkadiaEditor:handleSysDownload(filename)
     end
     PendingIndicator:hide()
     scripts:print_log("Edytor pobrany.")
-    if self.currentConfig then
-        self:run(self.currentConfig)
-        self.currentConfig = nil
+
+    if getOS == "mac" then
+        spawn(function(line) if line:gmatch("Volumes")() then self:runCurrent() end end, "hdiutil", "attach", editorBinaryBase .. self:getExtension())
+    else
+        self:runCurrent()
     end
 end
 
@@ -88,7 +92,17 @@ function ArkadiaEditor:run(config)
     spawn(display, editorBinary, "-arg", getMudletHomeDir(), config)
 end
 
+function ArkadiaEditor:runCurrent()
+    if self.currentConfig then
+        self:run(self.currentConfig)
+        self.currentConfig = nil
+    end
+end
+
 function ArkadiaEditor:getBinary()
+    if getOS() == "mac" then
+        return string.format("/Volumes/arkadia-cfg-editor %s/arkadia-cfg-editor.app/Contents/MacOS/arkadia-cfg-editor", self:getBinaryVersion())
+    end
     return editorBinaryBase .. self:getExtension()
 end
 
