@@ -1,7 +1,29 @@
 ArkadiaEditor = ArkadiaEditor or {}
 
-local editorBinaryBase = getMudletHomeDir() .. "/plugins/arkadia-cfg-editor/editor."
+local pluginDir = getMudletHomeDir() .. "/plugins/arkadia-cfg-editor"
+local current_version_file = pluginDir .. "/version.dat"
+local editorBinaryBase = pluginDir .. "/editor."
 local apiUrl = "https://api.github.com/repos/Delwing/arkadia-config-editor/releases/latest"
+
+function ArkadiaEditor:checkVersion()
+    if io.exists(self:getBinary()) then
+        getHTTP(apiUrl)
+        registerAnonymousEventHandler('sysGetHttpDone', function(event, url, response) self:versionCompare(url, response) end, true)
+    end
+end
+
+function ArkadiaEditor:versionCompare(url, response)
+    if url ~= apiUrl then
+        return true
+    end
+
+    if response.tag_name ~= self:getBinaryVersion() then
+        scripts:print_log("<SpringGreen>===> Zalecana aktualizacja edytora konfiguracji.", true)
+        local command = "ArkadiaEditor:getLatestInformation()"
+        cechoLink("<CadetBlue>(skrypty)<SpringGreen>: Kliknij tutaj aby pobrac.", command,"Pobierz", true)
+    end
+
+end
 
 function ArkadiaEditor:getLatestInformation()
     getHTTP(apiUrl)
@@ -16,6 +38,7 @@ function ArkadiaEditor:determineAssetToDownload(url, response)
     local responseObj = yajl.to_value(response)
     for _, asset in pairs(responseObj.assets) do
         if  asset.name:gmatch(string.format(".%s$", self:getExtension()))() then
+            self:storeBinaryVersion(responseObj.tag_name)
             self:download(asset.browser_download_url)
             return
         end
@@ -40,7 +63,10 @@ function ArkadiaEditor:handleSysDownload(filename)
     end
     PendingIndicator:hide()
     scripts:print_log("Edytor pobrany.")
-    self:run(self.currentConfig)
+    if self.currentConfig then
+        self:run(self.currentConfig)
+        self.currentConfig = nil
+    end
 end
 
 function ArkadiaEditor:handleSysDownloadError(error_found)
@@ -76,3 +102,21 @@ function ArkadiaEditor:getExtension()
     end
     return "AppImage"
 end
+
+function ArkadiaEditor:storeBinaryVersion(version)
+    local f = io.open(current_version_file, "w")
+    f:write(version)
+    f:close()
+end
+
+function ArkadiaEditor:getBinaryVersion()
+    local f = io.open(current_version_file, "r")
+    if not f then
+        return "unk"
+    end
+    local version = f:read("*a")
+    f:close()
+    return version
+end
+
+tempTimer(5, function() ArkadiaEditor:checkVersion() end)
