@@ -91,6 +91,8 @@ function ArkadiaEditor:run(config)
         self.currentConfig = config
     end
 
+    scripts:print_log("Uruchamiam edytor konfiguracji. Przeladuj konfiguracje po zapisaniu w edytorze - /laduj " .. config)
+
     local extension = self:getExtension()
     local editorBinary = self:getBinary()
     if extension == "AppImage" then
