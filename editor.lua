@@ -6,6 +6,9 @@ local editorBinaryBase = pluginDir .. "/editor."
 local apiUrl = "https://api.github.com/repos/Delwing/arkadia-config-editor/releases/latest"
 
 function ArkadiaEditor:checkVersion()
+    if mudletOlderThan(4, 10) then
+        return
+    end
     if io.exists(self:getBinary()) then
         getHTTP(apiUrl)
         registerAnonymousEventHandler('sysGetHttpDone', function(event, url, response) self:versionCompare(url, response) end, true)
@@ -48,6 +51,10 @@ function ArkadiaEditor:determineAssetToDownload(url, response)
 end
 
 function ArkadiaEditor:downloadBinary()
+    if mudletOlderThan(4, 10) then
+        scripts:print_log("Edytor sie nie pobierze. Zaktualizuj Mudlet do wersji co najmniej 4.10.")
+        return
+    end
     scripts:print_log("Pobieram edytor")
     self:getLatestInformation()
 end
