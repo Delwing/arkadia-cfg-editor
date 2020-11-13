@@ -61,7 +61,7 @@ end
 
 function ArkadiaEditor:download(url)
     PendingIndicator:show()
-    downloadFile(self:getBinary(), url)
+    downloadFile(editorBinaryBase .. self:getExtension(), url)
     registerAnonymousEventHandler("sysDownloadDone", function(_, filename) self:handleSysDownload(filename) end)
     registerAnonymousEventHandler("sysDownloadError", function(_, error_found) self:handleSysDownloadError(error_found) end)
 end
