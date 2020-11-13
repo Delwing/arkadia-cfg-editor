@@ -81,7 +81,7 @@ function ArkadiaEditor:handleSysDownload(filename)
 end
 
 function ArkadiaEditor:handleSysDownloadError(error_found)
-    cecho("<red>Blad pobieranie: " .. error_found)
+    cecho("<red>Blad pobierania: " .. error_found)
     PendingIndicator:hide()
 end
 
@@ -91,14 +91,16 @@ function ArkadiaEditor:run(config)
         self.currentConfig = config
     end
 
-    scripts:print_log("Uruchamiam edytor konfiguracji. Przeladuj konfiguracje po zapisaniu w edytorze - /laduj " .. config)
+    scripts:print_log("Uruchamiam edytor konfiguracji. Konfiguracja dla " .. config .. " zostanie przeladowana po zapisaniu.")
+
+    self:startCheckingFile(config)
 
     local extension = self:getExtension()
     local editorBinary = self:getBinary()
     if extension == "AppImage" then
         spawn(display, "chmod", "+x", editorBinary)
     end
-    spawn(display, editorBinary, "-arg", getMudletHomeDir(), config)
+    self.processHandle = spawn(display, editorBinary, "-arg", getMudletHomeDir(), config)
 end
 
 function ArkadiaEditor:runCurrent()
@@ -140,6 +142,22 @@ function ArkadiaEditor:getBinaryVersion()
     local version = f:read("*a")
     f:close()
     return version
+end
+
+function ArkadiaEditor:startCheckingFile(config)
+    self.lastModifiedTime = lfs.attributes(getMudletHomeDir() .. "/" .. config .. ".json").modification
+    self.modifiedTimer = tempTimer(5, function() self:shouldReloadConfig(config) end, true)
+end
+
+function ArkadiaEditor:shouldReloadConfig(config)
+    local currentModified = lfs.attributes(getMudletHomeDir() .. "/" .. config .. ".json").modification
+    if self.lastModifiedTime ~= currentModified then
+        scripts_load_v2_config(config)
+        self.lastModifiedTime = currentModified
+    end
+    if not self.processHandle:isRunning() and self.modifiedTimer then
+        killTimer(self.modifiedTimer)
+    end
 end
 
 tempTimer(5, function() ArkadiaEditor:checkVersion() end)
