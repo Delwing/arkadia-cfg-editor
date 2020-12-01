@@ -73,8 +73,9 @@ function ArkadiaEditor:handleSysDownload(filename)
     PendingIndicator:hide()
     scripts:print_log("Edytor pobrany.")
 
-    if getOS == "mac" then
-        spawn(function(line) if line:gmatch("Volumes")() then self:runCurrent() end end, "hdiutil", "attach", editorBinaryBase .. self:getExtension())
+    if getOS() == "mac" then
+        local runFunc = function(line) if line:gmatch("ejected")() then self:runCurrent() end end
+        spawn(runFunc, "sh", pluginDir .. "/install.sh", pluginDir, self:getBinaryVersion())
     else
         self:runCurrent()
     end
@@ -100,7 +101,11 @@ function ArkadiaEditor:run(config)
     if extension == "AppImage" then
         spawn(display, "chmod", "+x", editorBinary)
     end
-    self.processHandle = spawn(display, editorBinary, "-arg", getMudletHomeDir(), config)
+    if getOS() == "mac" then
+        self.processHandle = spawn(display, "/Applications/arkadia-cfg-editor.app", "-arg", getMudletHomeDir(), config)
+    else 
+        self.processHandle = spawn(display, editorBinary, "-arg", getMudletHomeDir(), config)
+    end
 end
 
 function ArkadiaEditor:runCurrent()
@@ -111,9 +116,6 @@ function ArkadiaEditor:runCurrent()
 end
 
 function ArkadiaEditor:getBinary()
-    if getOS() == "mac" then
-        return string.format("/Volumes/arkadia-cfg-editor %s/arkadia-cfg-editor.app/Contents/MacOS/arkadia-cfg-editor", self:getBinaryVersion())
-    end
     return editorBinaryBase .. self:getExtension()
 end
 
