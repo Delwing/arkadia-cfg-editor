@@ -1,4 +1,6 @@
-ArkadiaEditor = ArkadiaEditor or {}
+ArkadiaEditor = ArkadiaEditor or {
+    timers = {}
+}
 
 local pluginDir = getMudletHomeDir() .. "/plugins/arkadia-cfg-editor"
 local current_version_file = pluginDir .. "/version.dat"
@@ -148,7 +150,10 @@ end
 
 function ArkadiaEditor:startCheckingFile(config)
     self.lastModifiedTime = lfs.attributes(getMudletHomeDir() .. "/" .. config .. ".json").modification
-    self.modifiedTimer = tempTimer(5, function() self:shouldReloadConfig(config) end, true)
+    if self.timers[config] then
+        killTimer(self.timers[config])
+    end
+    self.timers[config] = tempTimer(5, function() self:shouldReloadConfig(config) end, true)
 end
 
 function ArkadiaEditor:shouldReloadConfig(config)
@@ -157,8 +162,8 @@ function ArkadiaEditor:shouldReloadConfig(config)
         scripts_load_v2_config(config)
         self.lastModifiedTime = currentModified
     end
-    if not self.processHandle:isRunning() and self.modifiedTimer then
-        killTimer(self.modifiedTimer)
+    if not self.processHandle:isRunning() and self.timers[config] then
+        killTimer(self.timers[config])
     end
 end
 
