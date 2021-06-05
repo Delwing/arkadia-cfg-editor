@@ -64,8 +64,8 @@ end
 function ArkadiaEditor:download(url)
     PendingIndicator:show()
     downloadFile(editorBinaryBase .. self:getExtension(), url)
-    registerAnonymousEventHandler("sysDownloadDone", function(_, filename) self:handleSysDownload(filename) end)
-    registerAnonymousEventHandler("sysDownloadError", function(_, error_found) self:handleSysDownloadError(error_found) end)
+    registerAnonymousEventHandler("sysDownloadDone", function(_, filename) self:handleSysDownload(filename) end, true)
+    registerAnonymousEventHandler("sysDownloadError", function(_, error_found) self:handleSysDownloadError(error_found) end, true)
 end
 
 function ArkadiaEditor:handleSysDownload(filename)
@@ -149,6 +149,10 @@ function ArkadiaEditor:getBinaryVersion()
 end
 
 function ArkadiaEditor:startCheckingFile(config)
+    if scripts.config_watch then
+        return
+    end
+
     self.lastModifiedTime = lfs.attributes(getMudletHomeDir() .. "/" .. config .. ".json").modification
     if self.timers[config] then
         killTimer(self.timers[config])
